@@ -1,3 +1,4 @@
+import dlt
 from Databricks_functions import set_up_table
 
 #sample custom defined function
