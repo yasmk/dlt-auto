@@ -1,6 +1,7 @@
 import dlt
 from pyspark.sql.functions import when, col, lit
 
+table_configurations = [] # this will contain all table configurations, can load different json files into this or use functions to add configs
 
 def set_up_table(*args, **kwargs):
     config = kwargs["config"]

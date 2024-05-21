@@ -20,7 +20,7 @@ source_database = spark.conf.get("mypipeline.source_database")
 
 # each table can "inherit" a parent template 
 #-----------------------------------------
-table_configurations = [
+json_configurations = [
   # append only table no expectations, source another LIVE table
   {
   "parent_template": append_only_template,
@@ -78,6 +78,31 @@ table_configurations = [
 #-----------------------------------------
 
 
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## another method to add config items? We can write functions for the non-custom functions. this might be easier than writing json
+
+# COMMAND ----------
+
+table_configurations.extend(json_configurations)
+
+
+# COMMAND ----------
+
+def add_append_only_table(target_table_name, source_table_name):
+    item_config = {
+  "parent_template": append_only_template,
+  "target_table_name": target_table_name,
+  "source_table_name": source_table_name,
+    }
+    table_configurations.append(item_config)
+
+
+# COMMAND ----------
+
+add_append_only_table(target_table_name="function_added_bronze_table_5", source_table_name="streaming_source")
 
 # COMMAND ----------
 
