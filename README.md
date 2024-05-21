@@ -2,7 +2,13 @@
 
 This solution automatically generates required DLT resurces (i.e., tables and view) based on the table configurations.
 
-This is using metaprogramming as discussed in (https://docs.databricks.com/en/delta-live-tables/create-multiple-tables.html)
+This is based on metaprogramming that discussed in (https://docs.databricks.com/en/delta-live-tables/create-multiple-tables.html)
+
+The main components of this soution 
+
+set_up_table decorator:  wraps a function with the required decorators to create the DLT resources.
+table_configurations: configuration of the resources. This can be updated by loading json configurations or using predefine functions 
+parent_templates: a config can "inherit" from a parent template. this parent template will have the common fields and helps avoiding repetition. For exmaple, the target_schema for all DLT tables and most source_tables is LIVE which is defined in the parent template. So unless a differnt source schema is used re-defining the source_schema is not needed.
 
 Each table configuration has different fields based on the type of the resource. 
 There are some predefined types: append_only, upsert, sql_table.
