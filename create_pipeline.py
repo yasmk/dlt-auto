@@ -7,6 +7,7 @@ import os
 
 from Databricks_templates import *
 from Databricks_functions import *
+from custom_functions import *
 
 # COMMAND ----------
 
@@ -127,8 +128,9 @@ def process_parent_template(config):
 
 def call_custom_function(function_name, spark, config):
       func_to_call = globals().get(function_name)
-      if func_to_call:
-          func_to_call(spark, config)
+      # if func_to_call:
+      func_to_call(spark, config)
+          
 
 # COMMAND ----------
 
