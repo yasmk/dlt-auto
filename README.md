@@ -5,6 +5,10 @@ This solution automatically generates required DLT resources (i.e., tables and v
 
 This is based on the metaprogramming that discussed in (https://docs.databricks.com/en/delta-live-tables/create-multiple-tables.html)
 
+This can be combined with DABs to define environment dependent configs. These will be part of pipeline settings: e.g., evn: dev, source_databse: test_db, ...
+For example the source_databse can be changed using DABs or the code can behave differntly based on the env (can load differnt set of configs for example). 
+
+
 ##The main components:
 
 - set_up_table decorator:  wraps a function with the required decorators to create the DLT resources.
@@ -28,10 +32,12 @@ For example for an append_only table: target_table_name and source_table_name ar
 ##Custom functions
 It is also possible to create resources using custom functions. User can define these new functions by following a pattern specified in the custom_function.py. This rerouces must be of type CUSTOM
 
+##Types
+Example types so far are
+append_only: streaming table from one source (delta table)
+upsert: upsert data from one source (delta table)
+sql: can pass a fixed sql query or a parameterised one to create an MV
+custom: custom user function  
 
+These can have expectations if they're defined in the config
 
-- pass spark to functions
-- can define a template to encapsulate the commmon fields. each child can override the fields as needed. this helps with defining the common fields ony once
-- type and target_table_name field are required
-- Can combine this with DABs to define environment dependent configs. These will be part of pipeline settings: e.g., evn: dev, source_databse: test_db, ...
-- There are some predefined templates and types (append only, upsert, single sql, ...). Users can define their own functions in python which needs to be wrapped using ??? decorator. this will create a dlt table or views 
