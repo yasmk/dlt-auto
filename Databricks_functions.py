@@ -61,22 +61,16 @@ def create_table_append_only(spark, config):
 # has to be a streaming table
 def create_sql_table(spark, config):
 
-    # source_table_name = config["source_table_name"]
-    # source_schema = config["source_schema"]
-    
     sql_query = config["sql_query"]
-    args2 = config["args"]
+    args = config["args"]
 
     @set_up_table(config=config)
     def create_bronze_table_df():
-      # if source_schema== "LIVE":
-      #   # df = dlt.read(f"{source_table_name}")
-      # else:
-      #   df = spark.readStream.table(f"{source_schema}.{source_table_name}")
 
-      if len(args2):
-        # df = spark.sql("SELECT * from IDENTIFIER(:x)", args = { "x" : "live.bronze_table_2"})
-        df = spark.sql("SELECT :x * :y * :z AS volume", args = { "x" : 3, "y" : 4, "z"  : 5 })
+      if len(args):
+        # sql_str = "SELECT * FROM {source_table}".format(**args) 
+        sql_str = sql_query.format(**args) 
+        df = spark.sql(sql_str)
       else: 
         df = spark.sql(sql_query)
 

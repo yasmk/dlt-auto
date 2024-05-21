@@ -58,14 +58,14 @@ table_configurations = [
   "sql_query": "SELECT * FROM live.bronze_table_2",
   "comment": "Silver table mv"
 }                 
-# ,
-# {
-#   "parent_template": sql_template,
-#   "target_table_name": "silver_table_4",
-#   "sql_query": "SELECT * from {source_Table_1}",
-#   "args": { "source_Table_1" : "live.bronze_table_2"},
-#   "comment": "Silver table mv sql and args"
-# }                 
+,
+{
+  "parent_template": sql_template,
+  "target_table_name": "silver_table_3",
+  "sql_query": "SELECT * from {source_Table_1}",
+  "args": { "source_Table_1" : "live.bronze_table_2"},
+  "comment": "Silver table mv sql and args"
+}                 
                                           
             ]
 #-----------------------------------------
