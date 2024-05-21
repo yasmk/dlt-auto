@@ -11,11 +11,11 @@ from Databricks_functions import *
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ##configurations and the loop to create the tables
+# MAGIC ##configurations
 
 # COMMAND ----------
 
-# source_database specified in the pipeline config (Can be changed based on dev, prod, ..., by DABs?) 
+# source_database specified in the pipeline config (Can be changed based on dev, prod, ..., by DABs) 
 source_database = spark.conf.get("mypipeline.source_database")
 
 # each table can "inherit" a parent template 
@@ -51,7 +51,7 @@ table_configurations = [
   "source_table_name": "bronze_table_2",
   "comment": "Silver table SCD"
 },
-
+#fixed SQL query
 {
   "parent_template": sql_template,
   "target_table_name": "silver_table_2",
@@ -59,29 +59,58 @@ table_configurations = [
   "comment": "Silver table mv"
 }                 
 ,
+#parameterised SQL query
 {
   "parent_template": sql_template,
   "target_table_name": "silver_table_3",
   "sql_query": "SELECT * from {source_Table_1}",
   "args": { "source_Table_1" : "live.bronze_table_2"},
   "comment": "Silver table mv sql and args"
-}                 
-                                          
+},
+# sample custom user function
+{
+  "type": "CUSTOM",
+  "target_table_name": "silver_table_4",
+  "source_table_names": ["bronze_table_1", f"{source_database}.mv_source_1"],
+  "function" : "my_custom_function"
+}                                          
             ]
 #-----------------------------------------
 
 
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Create  tables based on config
+
+# COMMAND ----------
+
+def process_parent_template(config):
+      #add fields from parent template that are not overwrriten to each table config
+    #---------------------------------
+    if "parent_template" in config.keys():
+      parent = config["parent_template"].copy() ### this is important otherwise we'll modify the original append_only_template 
+      keys = list(config.keys())
+      for key in keys:
+          parent.pop(key, None)
+      config.update(parent)
+      config.pop("parent_template", None)
+    #---------------------------------
+
+    return config
+
+def call_custom_function(function_name, spark, config):
+      func_to_call = globals().get(function_name)
+      if func_to_call:
+          func_to_call(spark, config)
+
+# COMMAND ----------
+
+
 for config in table_configurations: 
 
-    #add fields from parent template that are not overwrriten to each table config
-    #---------------------------------
-    parent = config["parent_template"].copy() ### this is important otherwise we'll modify the original append_only_template 
-    keys = list(config.keys())
-    for key in keys:
-        parent.pop(key, None)
-    config.update(parent)
-    config.pop("parent_template", None)
-    #---------------------------------
+    config = process_parent_template(config)
     
     if config["type"] == "append_only":
         create_table_append_only(spark, config)
@@ -92,5 +121,6 @@ for config in table_configurations:
     if config["type"] == "sql_table":
         create_sql_table(spark, config)
 
-        
+    if config["type"] == "CUSTOM":
+      call_custom_function(config["function"], spark, config)
         
