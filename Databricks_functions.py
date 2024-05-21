@@ -4,15 +4,18 @@ from pyspark.sql.functions import when, col, lit
 
 def set_up_table(*args, **kwargs):
     config = kwargs["config"]
+    
     target_table_name = config["target_table_name"]
-    comment = config["comment"]
-    expect_all_criteria = config["expect_all_criteria"]
-    expect_all_or_drop_criteria = config["expect_all_or_drop"]
-    expect_all_or_fail_criteria = config["expect_all_or_fail"]    
+
+    comment = config.get("comment", "")
+
+    expect_all_criteria = config.get("expect_all_criteria", {})
+    expect_all_or_drop_criteria = config.get("expect_all_or_drop", {})
+    expect_all_or_fail_criteria = config.get("expect_all_or_fail", {})
 
     def wrapper(func):
 
-      apply_expectations = len(config["expect_all_criteria"])+ len(config["expect_all_or_drop"])+len(config["expect_all_or_fail"])
+      apply_expectations = len(expect_all_criteria)+ len(expect_all_or_drop_criteria)+len(expect_all_or_fail_criteria)
 
       if apply_expectations:
         @dlt.expect_all(expect_all_criteria)
@@ -49,7 +52,7 @@ def create_table_append_only(spark, config):
     source_schema = config["source_schema"]
       
     @set_up_table(config=config)
-    def create_bronze_table_df():
+    def create_table():
       if source_schema== "LIVE":
         df = dlt.read_stream(f"{source_table_name}")
       else:
@@ -57,6 +60,26 @@ def create_table_append_only(spark, config):
 
       return df
         
+
+# has to be a streaming table
+def create_sql_table(spark, config):
+
+    sql_query = config["sql_query"]
+    args = config["args"]
+
+    @set_up_table(config=config)
+    def create_table():
+
+      if len(args):
+        # sql_str = "SELECT * FROM {source_table}".format(**args) 
+        sql_str = sql_query.format(**args) 
+        df = spark.sql(sql_str)
+      else: 
+        df = spark.sql(sql_query)
+
+      return df
+        
+
 
 def upsert_into_table(spark, config):
 
@@ -77,18 +100,7 @@ def upsert_into_table(spark, config):
       expect_all_or_fail=expect_all_or_fail_criteria,
   )
 
-  # dlt.create_streaming_table(
-  #     name=target_table_name,
-  #     table_properties=tableProperties,
-  #     partition_cols=partitionColumns,
-  #     path=target_path,
-  #     schema=struct_schema,
-  #     expect_all=expect_all_dict,
-  #     expect_all_or_drop=expect_all_or_drop_dict,
-  #     expect_all_or_fail=expect_all_or_fail_dict,
-  # )
-
-
+ 
   if source_schema== "LIVE":
     dlt.apply_changes(
       target = target_table_name,
@@ -105,3 +117,8 @@ def upsert_into_table(spark, config):
       sequence_by = col("ingesttime"),
       stored_as_scd_type = "2"
     )
+      
+
+
+
+
