@@ -50,3 +50,11 @@ custom: custom user function
 
 These can have expectations if they're defined in the config
 
+
+##Next steps
+- append flow
+- json validations (similar to Erik's code)
+- move the configuration to a separate file or files
+- integrate with DABs
+
+
