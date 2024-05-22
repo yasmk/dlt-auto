@@ -16,12 +16,20 @@ from custom_functions import *
 
 # COMMAND ----------
 
+def call_custom_function(function_name, spark, config):
+      func_to_call = globals().get(function_name)
+      # if func_to_call:
+      func_to_call(spark, config)
+
+
+# COMMAND ----------
+
 # source_database specified in the pipeline config (Can be changed based on dev, prod, ..., by DABs) 
 source_database = spark.conf.get("mypipeline.source_database")
 
 # each table can "inherit" a parent template 
 #-----------------------------------------
-json_configurations = [
+json_configuration = [
   # append only table no expectations, source another LIVE table
   {
   "parent_template": append_only_template,
@@ -82,24 +90,13 @@ json_configurations = [
 
 # COMMAND ----------
 
+#json configuration can be loaded from multiple json files and based on the path defnied using DABs
+table_configurations.extend(json_configuration)
+
+# COMMAND ----------
+
 # MAGIC %md
-# MAGIC ## another method to add config items? We can write functions for the non-custom functions. this might be easier than writing json
-
-# COMMAND ----------
-
-table_configurations.extend(json_configurations)
-
-
-# COMMAND ----------
-
-def add_append_only_table(target_table_name, source_table_name):
-    item_config = {
-  "parent_template": append_only_template,
-  "target_table_name": target_table_name,
-  "source_table_name": source_table_name,
-    }
-    table_configurations.append(item_config)
-
+# MAGIC ## Another method to add config items: Use such functions to add the config. this might be easier than writing json, can take care of default values and do some vaidation on the config
 
 # COMMAND ----------
 
@@ -109,28 +106,6 @@ add_append_only_table(target_table_name="function_added_bronze_table_5", source_
 
 # MAGIC %md
 # MAGIC ## Create  tables based on config
-
-# COMMAND ----------
-
-def process_parent_template(config):
-      #add fields from parent template that are not overwrriten to each table config
-    #---------------------------------
-    if "parent_template" in config.keys():
-      parent = config["parent_template"].copy() ### this is important otherwise we'll modify the original append_only_template 
-      keys = list(config.keys())
-      for key in keys:
-          parent.pop(key, None)
-      config.update(parent)
-      config.pop("parent_template", None)
-    #---------------------------------
-
-    return config
-
-def call_custom_function(function_name, spark, config):
-      func_to_call = globals().get(function_name)
-      # if func_to_call:
-      func_to_call(spark, config)
-          
 
 # COMMAND ----------
 

@@ -1,5 +1,8 @@
 import dlt
 from pyspark.sql.functions import when, col, lit
+from Databricks_templates import *
+
+
 
 table_configurations = [] # this will contain all table configurations, can load different json files into this or use functions to add configs
 
@@ -119,7 +122,34 @@ def upsert_into_table(spark, config):
       stored_as_scd_type = "2"
     )
       
+def process_parent_template(config):
+      #add fields from parent template that are not overwrriten to each table config
+    #---------------------------------
+    if "parent_template" in config.keys():
+      parent = config["parent_template"].copy() ### this is important otherwise we'll modify the original append_only_template 
+      keys = list(config.keys())
+      for key in keys:
+          parent.pop(key, None)
+      config.update(parent)
+      config.pop("parent_template", None)
+    #---------------------------------
 
+    return config
+
+
+# for append only tables target_table_name and source_table_name are required the resst is optional 
+def add_append_only_table(target_table_name, source_table_name, **kwargs):
+
+  comment = kwargs.get("comment", "")
+  # or can write a for loop to add all the args to the config  
+
+  item_config = {
+  "parent_template": append_only_template,
+  "target_table_name": target_table_name,
+  "source_table_name": source_table_name,
+  "comment": comment
+  }
+  table_configurations.append(item_config)
 
 
 
