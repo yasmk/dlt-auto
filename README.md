@@ -43,10 +43,10 @@ It is also possible to create resources using custom functions. User can define 
 
 ## Types
 Example types so far are
-append_only: streaming table from one source (delta table)
-upsert: upsert data from one source (delta table)
-sql: can pass a fixed sql query or a parameterised one to create an MV
-custom: custom user function  
+-append_only: streaming table from one source (delta table)
+-upsert: upsert data from one source (delta table)
+-sql: can pass a fixed sql query or a parameterised one to create an MV
+-custom: custom user function  
 
 These can have expectations if they're defined in the config
 
